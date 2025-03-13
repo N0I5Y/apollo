@@ -14,6 +14,7 @@ function App() {
   const [error, setError] = useState(null);
   const [prompt, setPrompt] = useState("");
   const [popupContent, setPopupContent] = useState(null);
+  const [jdUploadType, setJdUploadType] = useState("file");
 
   // Handle file upload and text extraction
   const handleFileUpload = async (event, setter, setExtractedText, endpoint, key) => {
@@ -26,7 +27,7 @@ function App() {
       const response = await axios.post(`${API_BASE_URL}/${endpoint}/`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      setExtractedText(response.data.extracted_text); // Set extracted text from response
+      setExtractedText(response.data.extracted_text || "")
     } catch (err) {
       setError("Failed to extract text. Please try again.");
     }
@@ -39,7 +40,7 @@ function App() {
     setError(null);
 
     // Validate if both files are uploaded
-    if (!extractedResumeText || !extractedJDText) {
+    if (!extractedResumeText || (!extractedJDText && jdUploadType === "file")) {
       setError("Please upload both Resume and Job Description first.");
       setLoading(false);
       return;
@@ -48,7 +49,7 @@ function App() {
     // Prepare request body
     const requestBody = {
       resume_text: extractedResumeText,
-      job_description: extractedJDText,
+      job_description: jdUploadType === "text" ? extractedJDText : extractedJDText,
       prompt: `${prompt}:
 
 Resume:
@@ -94,7 +95,21 @@ Job Description:
             required
           />
         </div>
-        {/* Job Description Upload */}
+        {/* Job Description Upload Option */}
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-bold mb-2">Job Description Upload Type</label>
+          <select
+            value={jdUploadType}
+            onChange={(e) => setJdUploadType(e.target.value)}
+            className="border rounded w-full py-2 px-3"
+          >
+            <option value="file">Upload JD as a File</option>
+            <option value="text">Enter JD as Text</option>
+          </select>
+        </div>
+
+        {/* Job Description File Upload */}
+        {jdUploadType === "file" && (
         <div className="mb-4">
           <label className="block text-gray-700 text-sm font-bold mb-2">Upload Job Description</label>
           <input
@@ -104,6 +119,23 @@ Job Description:
             required
           />
         </div>
+        )}
+
+        {/* Job Description Text Input */}
+        {jdUploadType === "text" && (
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2">Enter Job Description</label>
+            <textarea
+              placeholder="Paste the job description here..."
+              value={extractedJDText}
+              onChange={(e) => setExtractedJDText(e.target.value)}
+              className="border rounded w-full py-2 px-3 h-32"
+              required
+            />
+          </div>
+        )}
+
+        {/* Prompt Input */}
         <div className="mb-4">
           <label className="block text-gray-700 text-sm font-bold mb-2">Enter the prompt</label>
           <input
