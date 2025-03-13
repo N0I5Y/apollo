@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import axios from "axios";
 
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:8000/api"; // Fallback for local dev
+
 function App() {
   // State variables
   const [resume, setResume] = useState(null);
@@ -21,7 +23,7 @@ function App() {
     formData.append(key, file); // Ensure the key matches the backend
 
     try {
-      const response = await axios.post(`https://etzcpys9nz.ap.loclx.io/api/${endpoint}/`, formData, {
+      const response = await axios.post(`${API_BASE_URL}/${endpoint}/`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setExtractedText(response.data.extracted_text); // Set extracted text from response
@@ -58,7 +60,7 @@ Job Description:
 
     try {
       // Send request to enhance resume
-      const response = await axios.post("https://etzcpys9nz.ap.loclx.io/api/enhance_resume/", requestBody, {
+      const response = await axios.post(`${API_BASE_URL}/enhance_resume/`, requestBody, {
         headers: { "Content-Type": "application/json" },
       });
       setEnhancedResume(response.data); // Store full response object
